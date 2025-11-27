@@ -4,8 +4,6 @@ on:
   # Run on pushes to main that affect schema files
   push:
     branches: [main]
-    paths:
-      - 'cgmes-data/**'
 
 jobs:
   convert:
