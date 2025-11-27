@@ -17,7 +17,7 @@ jobs:
 
       - name: Convert RDF schemas to JSON-LD contexts
         id: convert
-        uses: OpenEnergyTwin/rdf-to-jsonld-context
+        uses: OpenEnergyTwin/rdf-to-jsonld-context@main
         with:
           schema-dir: 'cgmes-data'
           output-dir: 'output'
