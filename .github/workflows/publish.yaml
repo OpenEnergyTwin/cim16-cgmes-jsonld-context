@@ -1,0 +1,66 @@
+name: Convert CGMES Schemas
+
+on:
+  # Run on pushes to main that affect schema files
+  push:
+    branches: [main]
+    paths:
+      - 'cgmes-data/**'
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Convert RDF schemas to JSON-LD contexts
+        id: convert
+        uses: OpenEnergyTwin/rdf-to-jsonld-context
+        with:
+          schema-dir: 'cgmes-data'
+          output-dir: 'output'
+          # Use input from workflow_dispatch if provided, otherwise use default
+          context-base-url: 'https://openenergytwin.github.io/cim16-cgmes-jsonld-context'
+
+      - name: Display conversion results
+        run: |
+          echo "✅ Conversion complete!"
+          echo "📊 Statistics:"
+          echo "   - Classes: ${{ steps.convert.outputs.class-count }}"
+          echo "   - Properties: ${{ steps.convert.outputs.property-count }}"
+          echo "   - Context file: ${{ steps.convert.outputs.context-file }}"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: output/
+          retention-days: 1
+
+      - name: List generated files
+        run: |
+          echo "Generated files:"
+          ls -lh output/
+          echo ""
+          echo "Class contexts:"
+          ls -lh output/CIM/ | head -20
+
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    needs:
+      - convert
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
